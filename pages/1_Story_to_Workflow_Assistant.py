@@ -31,6 +31,9 @@ st.markdown("---")
 if "workflow_result" not in st.session_state:
     st.session_state.workflow_result = None
 
+if "run_workflow" not in st.session_state:
+    st.session_state.run_workflow = False
+
 # ---------------------------------------------------------
 # Input Section
 # ---------------------------------------------------------
@@ -41,16 +44,20 @@ user_story = st.text_area(
     placeholder="As a user, I want to..."
 )
 
-analyze_clicked = st.button("🔍 Generate Workflow")
+# Button that sets session state instead of resetting every rerun
+if st.button("🔍 Generate Workflow"):
+    st.session_state.run_workflow = True
 
 st.markdown("---")
 
 # ---------------------------------------------------------
 # Analyze Logic
 # ---------------------------------------------------------
-if analyze_clicked:
+if st.session_state.run_workflow:
+
     if not user_story.strip():
         st.error("Please enter a user story before generating.")
+        st.session_state.run_workflow = False  # stop running
     else:
         with st.spinner("Analyzing user story..."):
             prompt = build_prompt(user_story)
