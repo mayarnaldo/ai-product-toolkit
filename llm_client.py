@@ -7,6 +7,7 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Fallback JSON that matches your UI structure
 EMPTY_WORKFLOW = """
 {
   "acceptance_criteria": [],
@@ -18,13 +19,25 @@ EMPTY_WORKFLOW = """
 """
 
 def ask_ai(prompt, max_retries=5):
+    """
+    Calls the OpenAI API with retry logic.
+    Always returns valid JSON so Streamlit never breaks.
+    """
+
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1-mini",   # More stable than gpt-4o-mini
                 messages=[{"role": "user", "content": prompt}]
             )
-            return response.choices[0].message.content
+
+            raw = response.choices[0].message.content
+
+            # If model returns empty or None → fallback
+            if not raw or raw.strip() == "":
+                return EMPTY_WORKFLOW
+
+            return raw
 
         except Exception as e:
             error_text = str(e).lower()
@@ -35,8 +48,8 @@ def ask_ai(prompt, max_retries=5):
                 time.sleep(wait)
                 continue
 
-            # Unexpected error → return empty workflow JSON
+            # Unexpected error → return safe JSON
             return EMPTY_WORKFLOW
 
-    # All retries failed → return empty workflow JSON
+    # All retries failed → return safe JSON
     return EMPTY_WORKFLOW
