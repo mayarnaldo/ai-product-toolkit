@@ -27,7 +27,7 @@ def ask_ai(prompt, max_retries=5):
     for attempt in range(max_retries):
         try:
             response = client.chat.completions.create(
-                model="gpt-4.1-mini",   # More stable than gpt-4o-mini
+                model="gpt-4.1",   # More stable than gpt-4o-mini
                 messages=[{"role": "user", "content": prompt}]
             )
 
@@ -53,3 +53,4 @@ def ask_ai(prompt, max_retries=5):
 
     # All retries failed → return safe JSON
     return EMPTY_WORKFLOW
+
