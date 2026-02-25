@@ -42,29 +42,31 @@ if "user_story" not in st.session_state:
 # ---------------------------------------------------------
 st.subheader("📝 User Story Input")
 
-# Initialize session state
-if "user_story" not in st.session_state:
-    st.session_state.user_story = ""
-
-# Capture user input and store it immediately
+# Persist user story across reruns
 user_story_input = st.text_area(
     "Enter your user story",
     value=st.session_state.user_story,
     placeholder="As a user, I want to..."
 )
 
-# Update session state as the user types
+# Always keep latest text in session_state
 st.session_state.user_story = user_story_input
 
-# Button triggers workflow
+# DEBUG: show what we are actually sending
+st.caption("🔎 Debug – current user story value:")
+st.code(st.session_state.user_story or "<EMPTY>", language="text")
+
+# Button that triggers workflow generation
 if st.button("🔍 Generate Workflow"):
     st.session_state.run_workflow = True
 
-
+st.markdown("---")
 
 # ---------------------------------------------------------
 # Analyze Logic
 # ---------------------------------------------------------
+raw = None  # for debug display
+
 if st.session_state.run_workflow:
 
     if not st.session_state.user_story.strip():
@@ -75,6 +77,10 @@ if st.session_state.run_workflow:
             prompt = build_prompt(st.session_state.user_story)
             raw = ask_ai(prompt)
 
+            # DEBUG: show raw AI output
+            st.caption("🔎 Debug – raw AI output:")
+            st.code(raw or "<EMPTY>", language="json")
+
             parsed = safe_json_parse(raw)
 
             if parsed is None:
@@ -82,14 +88,27 @@ if st.session_state.run_workflow:
                 st.code(raw)
             else:
                 st.session_state.workflow_result = parsed
+                st.session_state.run_workflow = False  # reset flag
 
 # ---------------------------------------------------------
 # Output Section
 # ---------------------------------------------------------
-if st.session_state.workflow_result:
-    result = st.session_state.workflow_result
+result = st.session_state.workflow_result
 
+if result:
     st.subheader("📋 Workflow Output")
+
+    # DEBUG: show parsed JSON
+    st.caption("🔎 Debug – parsed JSON object:")
+    st.json(result)
+
+    # Check if everything is empty
+    all_empty = all(
+        not result.get(key)
+        for key in ["acceptance_criteria", "workflow_steps", "risks", "test_cases", "metrics"]
+    )
+    if all_empty:
+        st.warning("The AI returned an empty workflow. This usually means it received an empty or unclear user story.")
 
     # Acceptance Criteria
     st.markdown("### ✅ Acceptance Criteria")
@@ -120,5 +139,3 @@ if st.session_state.workflow_result:
 
 else:
     st.info("No results yet. Enter a user story and click **Generate Workflow**.")
-
-
