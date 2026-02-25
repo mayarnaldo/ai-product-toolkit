@@ -4,6 +4,15 @@ from llm_client import ask_ai
 from prompts import build_prompt
 
 # ---------------------------------------------------------
+# Safe JSON Parser
+# ---------------------------------------------------------
+def safe_json_parse(text):
+    try:
+        return json.loads(text)
+    except:
+        return None
+
+# ---------------------------------------------------------
 # Sidebar
 # ---------------------------------------------------------
 st.sidebar.title("🧩 Workflow Assistant")
@@ -47,12 +56,13 @@ if analyze_clicked:
             prompt = build_prompt(user_story)
             raw = ask_ai(prompt)
 
-            try:
-                data = json.loads(raw)
-                st.session_state.workflow_result = data
-            except:
+            parsed = safe_json_parse(raw)
+
+            if parsed is None:
                 st.error("The AI returned invalid JSON. Showing raw output:")
                 st.code(raw)
+            else:
+                st.session_state.workflow_result = parsed
 
 # ---------------------------------------------------------
 # Output Section
