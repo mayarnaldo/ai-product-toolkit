@@ -42,22 +42,24 @@ if "user_story" not in st.session_state:
 # ---------------------------------------------------------
 st.subheader("📝 User Story Input")
 
-# Persist user story across reruns
+# Initialize session state
 if "user_story" not in st.session_state:
     st.session_state.user_story = ""
 
+# Capture user input and store it immediately
 user_story_input = st.text_area(
     "Enter your user story",
     value=st.session_state.user_story,
     placeholder="As a user, I want to..."
 )
 
-# Update session state immediately when user types
+# Update session state as the user types
 st.session_state.user_story = user_story_input
 
-# Button that triggers workflow generation
+# Button triggers workflow
 if st.button("🔍 Generate Workflow"):
     st.session_state.run_workflow = True
+
 
 
 # ---------------------------------------------------------
@@ -118,4 +120,5 @@ if st.session_state.workflow_result:
 
 else:
     st.info("No results yet. Enter a user story and click **Generate Workflow**.")
+
 
