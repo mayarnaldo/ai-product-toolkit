@@ -7,6 +7,16 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+EMPTY_WORKFLOW = """
+{
+  "acceptance_criteria": [],
+  "workflow_steps": [],
+  "risks": [],
+  "test_cases": [],
+  "metrics": []
+}
+"""
+
 def ask_ai(prompt, max_retries=5):
     for attempt in range(max_retries):
         try:
@@ -25,8 +35,8 @@ def ask_ai(prompt, max_retries=5):
                 time.sleep(wait)
                 continue
 
-            # For other errors, stop immediately
-            return '{"error": "Unexpected AI error. Please try again."}'
+            # Unexpected error → return empty workflow JSON
+            return EMPTY_WORKFLOW
 
-    # If all retries fail, return valid JSON fallback
-    return '{"error": "AI overloaded. Please try again."}'
+    # All retries failed → return empty workflow JSON
+    return EMPTY_WORKFLOW
