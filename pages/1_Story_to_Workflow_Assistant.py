@@ -34,17 +34,22 @@ if "workflow_result" not in st.session_state:
 if "run_workflow" not in st.session_state:
     st.session_state.run_workflow = False
 
+if "user_story" not in st.session_state:
+    st.session_state.user_story = ""
+
 # ---------------------------------------------------------
 # Input Section
 # ---------------------------------------------------------
 st.subheader("📝 User Story Input")
 
-user_story = st.text_area(
+# Persist user story across reruns
+st.session_state.user_story = st.text_area(
     "Enter your user story",
+    value=st.session_state.user_story,
     placeholder="As a user, I want to..."
 )
 
-# Button that sets session state instead of resetting every rerun
+# Button that triggers workflow generation
 if st.button("🔍 Generate Workflow"):
     st.session_state.run_workflow = True
 
@@ -55,12 +60,12 @@ st.markdown("---")
 # ---------------------------------------------------------
 if st.session_state.run_workflow:
 
-    if not user_story.strip():
+    if not st.session_state.user_story.strip():
         st.error("Please enter a user story before generating.")
-        st.session_state.run_workflow = False  # stop running
+        st.session_state.run_workflow = False
     else:
         with st.spinner("Analyzing user story..."):
-            prompt = build_prompt(user_story)
+            prompt = build_prompt(st.session_state.user_story)
             raw = ask_ai(prompt)
 
             parsed = safe_json_parse(raw)
