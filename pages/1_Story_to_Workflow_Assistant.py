@@ -52,7 +52,7 @@ user_story_input = st.text_area(
 # Always keep latest text in session_state
 st.session_state.user_story = user_story_input
 
-# DEBUG: show what we are actually sending
+# DEBUG: show what we are actually storing
 st.caption("🔎 Debug – current user story value:")
 st.code(st.session_state.user_story or "<EMPTY>", language="text")
 
@@ -74,15 +74,14 @@ if st.session_state.run_workflow:
         st.session_state.run_workflow = False
     else:
         with st.spinner("Analyzing user story..."):
-    prompt = build_prompt(st.session_state.user_story)
+            prompt = build_prompt(st.session_state.user_story)
 
-    # ⭐ ADD THIS DEBUG BLOCK HERE ⭐
-    st.caption("🔎 Debug – final prompt sent to AI:")
-    st.code(prompt, language="text")
-    # ⭐ END DEBUG BLOCK ⭐
+            # ⭐ DEBUG: Show final prompt sent to AI ⭐
+            st.caption("🔎 Debug – final prompt sent to AI:")
+            st.code(prompt, language="text")
 
-    raw = ask_ai(prompt)
-            
+            # Call the model
+            raw = ask_ai(prompt)
 
             # DEBUG: show raw AI output
             st.caption("🔎 Debug – raw AI output:")
@@ -146,4 +145,3 @@ if result:
 
 else:
     st.info("No results yet. Enter a user story and click **Generate Workflow**.")
-
