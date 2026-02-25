@@ -17,13 +17,16 @@ def ask_ai(prompt, max_retries=5):
             return response.choices[0].message.content
 
         except Exception as e:
-            # Handle rate limits or temporary overload
-            if "rate_limit" in str(e).lower() or "429" in str(e):
-                wait_time = 2 ** attempt
-                time.sleep(wait_time)
-            else:
-                # For other errors, raise immediately
-                raise e
+            error_text = str(e).lower()
 
-    # If all retries fail
-    return "The AI is currently overloaded. Please try again in a moment."
+            # Retry only on rate limit or overload
+            if "rate" in error_text or "limit" in error_text or "429" in error_text:
+                wait = 2 ** attempt
+                time.sleep(wait)
+                continue
+
+            # For other errors, stop immediately
+            return '{"error": "Unexpected AI error. Please try again."}'
+
+    # If all retries fail, return valid JSON fallback
+    return '{"error": "AI overloaded. Please try again."}'
